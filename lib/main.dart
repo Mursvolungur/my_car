@@ -31,7 +31,7 @@ final String appTitle = 'My Car';
               fontWeight: FontWeight.w600,
               color: Colors.white,
             )
-          )
+          ),
         ),
         body: const ListaSostituzioni(),
       )

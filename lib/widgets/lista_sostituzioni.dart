@@ -69,104 +69,131 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
 
   @override
   Widget build(BuildContext context) {
-    Widget carName = const Text('Ford Fiesta');
-    Widget actualKm = const Text('Km Attuali 150.000');
+    Widget carName = const Text(
+      'Ford Fiesta',
+      style: TextStyle(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: Color.fromARGB(255, 35, 92, 184)
+      ),
+    );
+    Widget actualKm = const Text(
+      'Km Attuali',
+      style: TextStyle(
+        fontSize: 16,
+      ));
+    Widget actualKmValue = const Text(
+      '150.000',
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w500 
+      ),);
     Widget content = const Center(child: Text('Nessun dato presente'));
 
     if (_mycarItems.isNotEmpty) {
-
 // VARIANTE CON TABELLA //
       content = SingleChildScrollView(
           child: Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle, // Align content vertically in the middle
-            columnWidths: const {
-              // Definisco la larghezza di ogni colonna rispetto allo standard assegnato dividendo le colonne in parti uguali (nel caso di tre colonne 1 è uguale a un terzo, 2 a due terzi)
-              0: FlexColumnWidth(1.2),
-              1: FlexColumnWidth(0.8),
-              2: FlexColumnWidth(1),
-            },
-            children: _mycarItems.map((item) {
-              return TableRow(
-                children: [
-                  TableCell(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-                      child: Text(
-                          item.nome,
-                          style: const TextStyle(fontSize: 16, fontWeight:FontWeight.w600),
-                        ),
-                      ),
-                    ),
-                  TableCell(
-                    child: Text(
-                      item.km,
-                      style: const TextStyle(fontSize: 16, fontWeight:FontWeight.w600),
-                      textAlign: TextAlign.right,
-                    ),
+        defaultVerticalAlignment: TableCellVerticalAlignment.middle, // Align content vertically in the middle
+        columnWidths: const {
+          // Definisco la larghezza di ogni colonna rispetto allo standard assegnato dividendo le colonne in parti uguali (nel caso di tre colonne 1 è uguale a un terzo, 2 a due terzi)
+          0: FlexColumnWidth(1.2),
+          1: FlexColumnWidth(0.8),
+          2: FlexColumnWidth(1),
+        },
+        children: _mycarItems.map((item) {
+          return TableRow(
+            children: [
+              TableCell(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                  child: Text(
+                    item.nome,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600),
                   ),
-                  TableCell(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 16, 16, 16),
-                      child: Text(
-                          item.dataCambio,
-                          style: const TextStyle(fontSize: 15, fontWeight:FontWeight.w500),
-                          textAlign: TextAlign.end,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
-            )
-                  
+                ),
+              ),
+              TableCell(
+                child: Text(
+                  item.km,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.end,
+                ),
+              ),
+              TableCell(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 16, 16, 16),
+                  child: Text(
+                    item.dataCambio,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w500),
+                    textAlign: TextAlign.end,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }).toList(),
+      )
+
 // VARIANTE CON TABELLA - FINE //
 
 // VARIANTE CON LIST TILE //
-              // content = Expanded(
-              // child: ListView.builder(
-              //     itemCount: _mycarItems.length,
-              //     itemBuilder: (context, index) =>
-              // ListTile(
-              //   key: ValueKey(_mycarItems[index].id),
-              //   title: Text(
-              //     _mycarItems[index].km,
-              //     style: const TextStyle(fontSize: 16, fontWeight:FontWeight.w600),
-              //     textAlign: TextAlign.right,
-              //   ),
-              //   leading: ConstrainedBox(
-              //     constraints: const BoxConstraints(maxWidth: 150),
-              //     child: Text(
-              //       _mycarItems[index].nome,
-              //       style: const TextStyle(fontSize: 15, fontWeight:FontWeight.w600)
-              //     ),
-              //   ),
-              //   trailing: Text(
-              //     _mycarItems[index].dataCambio,
-              //     style: const TextStyle(fontSize: 14, fontWeight:FontWeight.w500),
-              //     textAlign: TextAlign.end,
-              //   )
-              // )
-              // ));
+          // content = Expanded(
+          // child: ListView.builder(
+          //     itemCount: _mycarItems.length,
+          //     itemBuilder: (context, index) =>
+          // ListTile(
+          //   key: ValueKey(_mycarItems[index].id),
+          //   title: Text(
+          //     _mycarItems[index].km,
+          //     style: const TextStyle(fontSize: 16, fontWeight:FontWeight.w600),
+          //     textAlign: TextAlign.right,
+          //   ),
+          //   leading: ConstrainedBox(
+          //     constraints: const BoxConstraints(maxWidth: 150),
+          //     child: Text(
+          //       _mycarItems[index].nome,
+          //       style: const TextStyle(fontSize: 15, fontWeight:FontWeight.w600)
+          //     ),
+          //   ),
+          //   trailing: Text(
+          //     _mycarItems[index].dataCambio,
+          //     style: const TextStyle(fontSize: 14, fontWeight:FontWeight.w500),
+          //     textAlign: TextAlign.end,
+          //   )
+          // )
+          // ));
 // VARIANTE CON LIST TILE - FINE //
-      );
+          );
     }
 
     return Scaffold(
       body: Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: carName,
-          )),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: actualKm
+        children: [
+          Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 8, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: carName,
+              )),
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: actualKm),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child:
+                    Align(alignment: Alignment.centerRight, child: actualKmValue),
+              ),
+            ]
           ),
-        ),
         content
       ],
     ));
