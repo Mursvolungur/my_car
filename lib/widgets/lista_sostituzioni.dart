@@ -12,11 +12,38 @@ class ListaSostituzioni extends StatefulWidget {
 
 class _ListaSostituzioniState extends State<ListaSostituzioni> {
   List<MycarItem> _mycarItems = [];
+  // Questo oggetto viene utilizzato per identificare e gestire il form.
+  // Per catturare i dati inseriti dall'utente e prepararli per l'invio, devi chiamare il metodo save() dell'oggetto FormState associato al tuo form.
+  final _formKey = GlobalKey<FormState>();
+  var _newName = '';
+  var _newKm = '';
+  var _newChangeDate = '';
 
   @override
   void initState() {
     super.initState();
     _loadItems();
+  }
+
+  void _saveItem() async {
+    _formKey.currentState!.save();
+    final url = Uri.https(
+        'corso-flutter-63be3-default-rtdb.europe-west1.firebasedatabase.app',
+        'mycar.json');
+    final response = await http.post(url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'nome': _newName,
+          'km': _newKm,
+          'dataCambio': _newChangeDate,
+        }));
+    _loadItems(); // Aggiorna la pagina richiamando _loadItems
+    _formKey.currentState!.reset(); // Resetta i campi di modifica una volta inviata la post
+    // TODO: TOGLIERE IL FOCUS UNA VOLTA INVIATA LA POST O QUANDO SI CLICCA FUORI DAI FORM FIELD
+    print(response.body);
+    print(response.statusCode);
   }
 
   // Getall all'apertura dell'App
@@ -48,7 +75,7 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
         _mycarItems = _loadedItems;
       });
     } catch (error) {
-      print("Error loading data: $error");
+      debugPrint("Error loading data: $error");
       showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -72,29 +99,26 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
     Widget carName = const Text(
       'Ford Fiesta',
       style: TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.w700,
-        color: Color.fromARGB(255, 35, 92, 184)
-      ),
+          fontSize: 28,
+          fontWeight: FontWeight.w700,
+          color: Color.fromARGB(255, 35, 92, 184)),
     );
-    Widget actualKm = const Text(
-      'Km Attuali',
-      style: TextStyle(
-        fontSize: 16,
-      ));
+    Widget actualKm = const Text('Km Attuali',
+        style: TextStyle(
+          fontSize: 16,
+        ));
     Widget actualKmValue = const Text(
       '150.000',
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500 
-      ),);
+      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    );
     Widget content = const Center(child: Text('Nessun dato presente'));
 
     if (_mycarItems.isNotEmpty) {
-// VARIANTE CON TABELLA //
+      // VARIANTE CON TABELLA //
       content = SingleChildScrollView(
           child: Table(
-        defaultVerticalAlignment: TableCellVerticalAlignment.middle, // Align content vertically in the middle
+        defaultVerticalAlignment: TableCellVerticalAlignment
+            .middle, // Align content vertically in the middle
         columnWidths: const {
           // Definisco la larghezza di ogni colonna rispetto allo standard assegnato dividendo le colonne in parti uguali (nel caso di tre colonne 1 è uguale a un terzo, 2 a due terzi)
           0: FlexColumnWidth(1.2),
@@ -137,8 +161,7 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
           );
         }).toList(),
       )
-
-// VARIANTE CON TABELLA - FINE //
+          // VARIANTE CON TABELLA - FINE //
 
 // VARIANTE CON LIST TILE //
           // content = Expanded(
@@ -171,31 +194,73 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
     }
 
     return Scaffold(
-      body: Column(
+        body: Column(children: [
+      Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 8, 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: carName,
+          )),
+      Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+          child: Align(alignment: Alignment.centerRight, child: actualKm),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Align(alignment: Alignment.centerRight, child: actualKmValue),
+        ),
+      ]),
+      Column(
         children: [
+          content,
+          // Input fields for adding new data
           Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 8, 8),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: carName,
-              )),
-          Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: actualKm),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child:
-                    Align(alignment: Alignment.centerRight, child: actualKmValue),
-              ),
-            ]
+              padding: const EdgeInsets.fromLTRB(16, 32, 8, 16),
+              child: Form(
+                  key: _formKey,
+                  child: Row(children: [
+                Expanded(
+                  flex: 2,
+                  child: TextFormField(
+                    // maxLength: 40,
+                    decoration: const InputDecoration(labelText: 'Aggiungi'),
+                    // Store the value entered by the user for nome.
+                    // You can use a TextEditingController for this.
+                    onSaved: (value) {
+                      _newName = value!;
+                      debugPrint(_newName);
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                      decoration: const InputDecoration(labelText: ''),
+                      // Store the value entered by the user for km.
+                      onSaved: (value) {
+                        _newKm = value!;
+                      }),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                      decoration: const InputDecoration(labelText: ''),
+                      // Store the value entered by the user for dataCambio
+                      onSaved: (value) {
+                        _newChangeDate = value!;
+                      }),
+                ),
+                const SizedBox(width: 8),
+              ]))),
+          ElevatedButton(
+            onPressed: _saveItem,
+            // Handle the submission of the new data.
+            // Add the new entry to your _mycarItems list or database.
+            child: const Text('Salva'),
           ),
-        content
-      ],
-    ));
+        ],
+      )
+    ]));
   }
 }
