@@ -318,7 +318,7 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
       Column(
         children: [
           SizedBox(
-            height: 320,
+            height: 250,
             child: content),
           // Input fields for adding new data
           Padding(
