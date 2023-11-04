@@ -1,5 +1,5 @@
 class MycarItem {
-  const MycarItem({
+  MycarItem({
     required this.id,
     required this.nome,
     required this.km,
@@ -7,7 +7,7 @@ class MycarItem {
   });
 
   final String id;
-  final String nome;
-  final dynamic km;
-  final String dataCambio;
+  String nome;
+  dynamic km;
+  String dataCambio;
 }
