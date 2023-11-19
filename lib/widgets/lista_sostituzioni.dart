@@ -12,9 +12,7 @@ class ListaSostituzioni extends StatefulWidget {
 
 class _ListaSostituzioniState extends State<ListaSostituzioni> {
   List<MycarItem> _mycarItems = [];
-  // Questo oggetto viene utilizzato per identificare e gestire il form.
-  // Per catturare i dati inseriti dall'utente e prepararli per l'invio, devi chiamare il metodo save() dell'oggetto FormState associato al tuo form.
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<ScaffoldState> _modalScaffoldKey = GlobalKey<ScaffoldState>();
   var _newName = '';
   var _newKm = '';
   var _newChangeDate = '';
@@ -42,11 +40,11 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
     print(response.body);
     print(response.statusCode);
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
         const SnackBar(content: Text('Dati aggiunti con successo')),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
         const SnackBar(
             content: Text('Errore durante l\'aggiornamento dei dati')),
       );
@@ -60,9 +58,13 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
   void _addItem() {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Aggiungi nuovo elemento"),
+      builder: (BuildContext context) => Scaffold(
+        key: _modalScaffoldKey, // la key è una sorta di ID del widget, qui non è indispensabile
+        extendBody: false,  // Se impostato su false, il corpo sarà posizionato sopra la barra di navigazione inferiore. Questo è utile per evitare che i widget si sovrappongano alla barra di navigazione inferiore
+        resizeToAvoidBottomInset: true, // Questa proprietà controlla se la parte inferiore del corpo deve essere ridimensionata automaticamente quando la tastiera appare. Se impostato su true, il corpo verrà ridimensionato in modo da evitare che la tastiera copra il contenuto inferiore
+        backgroundColor: Colors.transparent,
+        body: AlertDialog(
+          title: const Text("Aggiungi dati"),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -77,12 +79,14 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
                 onChanged: (value) {
                   _newKm = value;
                 },
+                keyboardType:TextInputType.datetime,
               ),
               TextFormField(
                 decoration: const InputDecoration(labelText: 'Data Cambio'),
                 onChanged: (value) {
                   _newChangeDate = value;
                 },
+                keyboardType: TextInputType.datetime,
               ),
             ],
           ),
@@ -107,41 +111,99 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
               child: const Text('Aggiungi'),
             ),
           ],
-        );
-      },
+        ),
+      ),
+    );
+  }
+
+  void _editActualKm(MycarItem _mycarItems) {
+    int newKmValue = _mycarItems.actualKm;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => Scaffold(
+        key: _modalScaffoldKey,
+        extendBody: false,
+        resizeToAvoidBottomInset: true,
+        backgroundColor: Colors.transparent,
+        body: AlertDialog(
+          title: const Text("Aggiorna i Km totali"),
+          content: Column(mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              style: const TextStyle(fontSize: 20),
+              textAlign: TextAlign.center,
+              initialValue: _mycarItems.actualKm.toString(),
+              onChanged: (value) {
+                int? parsedValue = int.tryParse(value);
+                if (parsedValue != null) {
+                  setState(() {
+                    newKmValue = parsedValue;
+                  });
+                }
+              },
+              keyboardType: TextInputType.number,
+            )
+          ]),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Chiude il dialog
+              },
+              child: const Text('Annulla')),
+            TextButton(
+              onPressed: () {
+                _saveNewActualKm(_mycarItems, newKmValue);  // Richiama la funzione che fa la PATCH e
+                print('newKmValue = ');
+                print(newKmValue);
+                Navigator.of(context).pop();    // poi chiude il dialog
+              },
+              child: const Text('Salva')
+            )
+          ]
+        )
+      )
     );
   }
 
   void _editItem(MycarItem item) {
     showDialog(
         context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
+        builder: (BuildContext context) => Scaffold(
+          key: _modalScaffoldKey, // la key è una sorta di ID del widget
+          extendBody: false,  // Se impostato su false, il corpo sarà posizionato sopra la barra di navigazione inferiore. Questo è utile per evitare che i widget si sovrappongano alla barra di navigazione inferiore
+          resizeToAvoidBottomInset: true, // Questa proprietà controlla se la parte inferiore del corpo deve essere ridimensionata automaticamente quando la tastiera appare. Se impostato su true, il corpo verrà ridimensionato in modo da evitare che la tastiera copra il contenuto inferiore
+          backgroundColor: Colors.transparent,
+          body: AlertDialog(
               title: const Text("Modifica dati"),
-              content: Column(mainAxisSize: MainAxisSize.min, children: [
+              content: Column(mainAxisSize: MainAxisSize.min,
+              children: [
                 TextFormField(
-                    initialValue: item
-                        .nome, // All'apertura del dialog vedi il valore attuale
-                    decoration: const InputDecoration(labelText: 'Nome'),
-                    onChanged: (value) {
-                      // PER QUALCHE STRANA RAGIONE CON onSaved NON FUNZIONA
-                      print(value);
-                      item.nome = value;
-                    }),
+                  initialValue: item.nome, // All'apertura del dialog vedi il valore attuale
+                  decoration: const InputDecoration(labelText: 'Nome'),
+                  onChanged: (value) {
+                    // PER QUALCHE STRANA RAGIONE CON onSaved NON FUNZIONA
+                    print(value);
+                    item.nome = value;
+                  }
+                ),
                 TextFormField(
-                    initialValue: item.km,
-                    decoration: const InputDecoration(labelText: 'Km'),
-                    onChanged: (value) {
-                      print(value);
-                      item.km = value;
-                    }),
+                  initialValue: item.km,
+                  decoration: const InputDecoration(labelText: 'Km'),
+                  onChanged: (value) {
+                    print(value);
+                    item.km = value;
+                  },
+                  keyboardType: TextInputType.datetime,
+                ),
                 TextFormField(
-                    initialValue: item.dataCambio,
-                    decoration: const InputDecoration(labelText: 'Data Cambio'),
-                    onChanged: (value) {
-                      print(value);
-                      item.dataCambio = value;
-                    }),
+                  initialValue: item.dataCambio,
+                  decoration: const InputDecoration(labelText: 'Data Cambio'),
+                  onChanged: (value) {
+                    print(value);
+                    item.dataCambio = value;
+                  },
+                  keyboardType: TextInputType.datetime,
+                ),
               ]),
               actions: <Widget>[
                 TextButton(
@@ -151,13 +213,12 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
                     child: const Text('Annulla')),
                 TextButton(
                     onPressed: () {
-                      _saveChanges(
-                          item); // Richiama la funzione che fa la PATCH e
+                      _saveChanges(item); // Richiama la funzione che fa la PATCH e
                       Navigator.of(context).pop(); // poi chiude il dialog
                     },
                     child: const Text('Salva'))
-              ]);
-        });
+              ])
+    ));
   }
 
   // Patch per modifica dati esistenti
@@ -175,11 +236,38 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
     print(response.body);
     print(response.statusCode);
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
         const SnackBar(content: Text('Dati aggiornati con successo')),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
+        const SnackBar(
+            content: Text('Errore durante l\'aggiornamento dei dati')),
+      );
+    }
+    _loadItems(); // Aggiorna la pagina richiamando _loadItems
+  }
+
+    // Patch per modifica dati esistenti
+  void _saveNewActualKm(MycarItem _mycarItems, newKmValue) async {
+    final url = Uri.https(
+        'corso-flutter-63be3-default-rtdb.europe-west1.firebasedatabase.app',
+        'mycar.json');
+    final response = await http.patch(url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(
+            {'kmAttuali': newKmValue}));
+    print(response.headers);
+    print(response.body);
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
+        const SnackBar(content: Text('Dati aggiornati con successo')),
+      );
+    } else {
+      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
         const SnackBar(
             content: Text('Errore durante l\'aggiornamento dei dati')),
       );
@@ -195,22 +283,26 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
           'mycar.json');
       final response = await http.get(url);
       final Map<String, dynamic> listData = json.decode(response.body);
+      final actualKm = listData['kmAttuali'] as int? ?? 0;
       final List<MycarItem> _loadedItems = [];
       for (final item in listData.entries) {
-        final id = item.key;
-        final dataCambio = item.value['dataCambio'] as String? ??
-            "No Data"; // ' ?? "No Data" ' sta per 'se non è una stringa applica questa stringa di fallback". È indispensabile per dare all'App una stringa di riserva da inserire nel caso il valore fosse null (ad esempio in caso di cancellazione da DB)
-        final km = item.value['km'] as String? ?? "No Data";
-        final nome = item.value['nome'] as String? ?? "No Data";
+        if (item.key != 'kmAttuali') {  // Quando cicla non deve aggiungere il valore kmAttuali all'array, è un valore unico, non è da ciclare
+          final id = item.key;
+          final dataCambio = item.value['dataCambio'] as String? ??
+              "No Data"; // ' ?? "No Data" ' sta per 'se non è una stringa applica questa stringa di fallback". È indispensabile per dare all'App una stringa di riserva da inserire nel caso il valore fosse null (ad esempio in caso di cancellazione da DB)
+          final km = item.value['km'] as String? ?? "No Data";
+          final nome = item.value['nome'] as String? ?? "No Data";
 
-        _loadedItems.add(
-          MycarItem(
-            id: id,
-            nome: nome,
-            km: km,
-            dataCambio: dataCambio,
-          ),
-        );
+          _loadedItems.add(
+            MycarItem(
+              actualKm: actualKm,
+              id: id,
+              nome: nome,
+              km: km,
+              dataCambio: dataCambio,
+            ),
+          );
+        }
       }
       setState(() {
         _mycarItems = _loadedItems;
@@ -244,83 +336,92 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
           fontWeight: FontWeight.w700,
           color: Color.fromARGB(255, 35, 92, 184)),
     );
-    Widget actualKm = const Text('Km Attuali',
+    Widget headerActualKm = const Text('Km Attuali',
         style: TextStyle(
           fontSize: 16,
         ));
-    Widget actualKmValue = const Text(
-      '82.000',
-      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    );
+    Widget actualKmValue =  const Text('Nessun dato presente');
+      if (_mycarItems.isNotEmpty) {
+        actualKmValue = GestureDetector(
+          onTap: () {
+            _editActualKm(_mycarItems.first);
+          },
+          child: Text(
+            _mycarItems.first.actualKm.toString(),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+        );
+      }
+
     Widget content = const Center(child: Text('Nessun dato presente'));
 
     if (_mycarItems.isNotEmpty) {
       content = ListView(
-          shrinkWrap:
-              true, // Allow the ListView to take only the necessary space
-          children: [
-            // VARIANTE CON TABELLA //
-            Table(
-              defaultVerticalAlignment: TableCellVerticalAlignment
-                  .middle, // Align content vertically in the middle
-              columnWidths: const {
-                // Definisco la larghezza di ogni colonna rispetto allo standard assegnato dividendo le colonne in parti uguali (nel caso di tre colonne 1 è uguale a un terzo, 2 a due terzi)
-                0: FlexColumnWidth(1.2),
-                1: FlexColumnWidth(0.8),
-                2: FlexColumnWidth(1),
-              },
-              children: _mycarItems.map((item) {
-                return TableRow(
-                  children: [
-                    TableCell(
-                      child: GestureDetector(
-                        onTap: () {
-                          _editItem(item);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-                          child: Text(
-                            item.nome,
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
+        shrinkWrap:
+            true, // Allow the ListView to take only the necessary space
+        children: [
+          Table(
+            defaultVerticalAlignment: TableCellVerticalAlignment
+                .middle, // Align content vertically in the middle
+            columnWidths: const {
+              // Definisco la larghezza di ogni colonna rispetto allo standard assegnato dividendo le colonne in parti uguali (nel caso di tre colonne 1 è uguale a un terzo, 2 a due terzi)
+              0: FlexColumnWidth(1.2),
+              1: FlexColumnWidth(0.8),
+              2: FlexColumnWidth(1),
+            },
+            children: _mycarItems.map((item) {
+              return TableRow(
+                children: [
+                  TableCell(
+                    child: GestureDetector(
+                      onTap: () {
+                        _editItem(item);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                        child: Text(
+                          item.nome,
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
-                    TableCell(
-                      child: GestureDetector(
-                        onTap: () {
-                          _editItem(item);
-                        },
+                  ),
+                  TableCell(
+                    child: GestureDetector(
+                      onTap: () {
+                        _editItem(item);
+                      },
+                      child: Text(
+                        item.km,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ),
+                  TableCell(
+                    child: GestureDetector(
+                      onTap: () {
+                        _editItem(item);
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 16, 16, 16),
                         child: Text(
-                          item.km,
+                          item.dataCambio,
                           style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600),
+                              fontSize: 15, fontWeight: FontWeight.w500),
                           textAlign: TextAlign.end,
                         ),
                       ),
                     ),
-                    TableCell(
-                      child: GestureDetector(
-                        onTap: () {
-                          _editItem(item);
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 16, 16, 16),
-                          child: Text(
-                            item.dataCambio,
-                            style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500),
-                            textAlign: TextAlign.end,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
-            )
-          ]);
+                  ),
+                ],
+              );
+            }).toList(),
+          )
+        ]
+      );
     }
 
     return Scaffold(
@@ -334,16 +435,25 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
       Column(children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-          child: Align(alignment: Alignment.centerRight, child: actualKm),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: headerActualKm
+          ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Align(alignment: Alignment.centerRight, child: actualKmValue),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: actualKmValue
+          ),
         ),
       ]),
       Column(
         children: [
-          SizedBox(height: 400, child: content),
+          SizedBox(
+            height: 400,
+            child: content
+          ),
           ElevatedButton(
             onPressed: _addItem,
             child: const Text(
