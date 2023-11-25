@@ -423,46 +423,54 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
         ]
       );
     }
-
+    
+    final screenSize = MediaQuery.of(context).size; // Prende dimensioni schermo
+    double normalHeight = 400;                      // Imposta altezza standard per il bottone "Aggiungi nuovo elemento"
+    if (screenSize.height <= 700) {                 // Ma se lo schermo è corto (tipo Iphone 7) allora riduce l'altezza della colonna del bottone
+      normalHeight = 300;
+    }
     return Scaffold(
-        body: Column(children: [
-      Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 8, 8),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: carName,
-          )),
-      Column(children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: headerActualKm
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: actualKmValue
-          ),
-        ),
-      ]),
-      Column(
+      body: Column(
         children: [
-          SizedBox(
-            height: 400,
-            child: content
-          ),
-          ElevatedButton(
-            onPressed: _addItem,
-            child: const Text(
-              'Aggiungi nuovo elemento',
-              style: TextStyle(color: Colors.white),
+          Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 8, 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: carName,
+              )),
+          Column(children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: headerActualKm
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: actualKmValue
+              ),
+            ),
+          ]),
+          Column(
+            children: [
+              SizedBox(
+                height: normalHeight,
+                child: content
+              ),
+              ElevatedButton(
+                onPressed: _addItem,
+                child: const Text(
+                  'Aggiungi nuovo elemento',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          )
+        ]
       )
-    ]));
+    );
   }
 }
