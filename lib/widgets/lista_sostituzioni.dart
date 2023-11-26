@@ -23,38 +23,6 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
     _loadItems();
   }
 
-  void _saveNewItem() async {
-    final url = Uri.https(
-        'corso-flutter-63be3-default-rtdb.europe-west1.firebasedatabase.app',
-        'mycar.json');
-    final response = await http.post(url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'nome': _newName,
-          'km': _newKm,
-          'dataCambio': _newChangeDate,
-        }));
-    print(response.headers);
-    print(response.body);
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
-        const SnackBar(content: Text('Dati aggiunti con successo')),
-      );
-    } else {
-      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
-        const SnackBar(
-            content: Text('Errore durante l\'aggiornamento dei dati')),
-      );
-    }
-    _loadItems(); // Aggiorna la pagina richiamando _loadItems
-      _newName = '';
-      _newKm = '';
-      _newChangeDate = '';
-  }
-
   void _addItem() {
     showDialog(
       context: context,
@@ -94,6 +62,9 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+                _newName = '';
+                _newKm = '';
+                _newChangeDate = '';
               },
               child: const Text('Annulla'),
             ),
@@ -114,6 +85,42 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
         ),
       ),
     );
+  }
+
+  void _saveNewItem() async {
+    final url = Uri.https(
+        'corso-flutter-63be3-default-rtdb.europe-west1.firebasedatabase.app',
+        'mycar.json');
+    final response = await http.post(url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'nome': _newName,
+          'km': _newKm,
+          'dataCambio': _newChangeDate,
+        }));
+    print(response.headers);
+    print(response.body);
+    print(response.statusCode);
+
+    if (response.statusCode == 200) {
+      if (_modalScaffoldKey.currentContext != null) {
+        ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
+          const SnackBar(content: Text('Dati aggiunti con successo')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
+        const SnackBar(
+          content: Text('Errore durante l\'aggiornamento dei dati')
+        ),
+      );
+    }
+    _loadItems(); // Aggiorna la pagina richiamando _loadItems
+    _newName = '';
+    _newKm = '';
+    _newChangeDate = '';
   }
 
   void _editActualKm(MycarItem _mycarItems) {
@@ -181,7 +188,7 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
                   initialValue: item.nome, // All'apertura del dialog vedi il valore attuale
                   decoration: const InputDecoration(labelText: 'Nome'),
                   onChanged: (value) {
-                    // PER QUALCHE STRANA RAGIONE CON onSaved NON FUNZIONA
+                    // con onSaved non funziona
                     print(value);
                     item.nome = value;
                   }
@@ -235,10 +242,13 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
     print(response.headers);
     print(response.body);
     print(response.statusCode);
+
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
-        const SnackBar(content: Text('Dati aggiornati con successo')),
-      );
+      if (_modalScaffoldKey.currentContext != null) {
+        ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
+          const SnackBar(content: Text('Dati aggiornati con successo')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
         const SnackBar(
@@ -248,28 +258,34 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
     _loadItems(); // Aggiorna la pagina richiamando _loadItems
   }
 
-    // Patch per modifica dati esistenti
+  // Patch per modifica dati esistenti
   void _saveNewActualKm(MycarItem _mycarItems, newKmValue) async {
     final url = Uri.https(
-        'corso-flutter-63be3-default-rtdb.europe-west1.firebasedatabase.app',
-        'mycar.json');
+      'corso-flutter-63be3-default-rtdb.europe-west1.firebasedatabase.app',
+      'mycar.json');
     final response = await http.patch(url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: json.encode(
-            {'kmAttuali': newKmValue}));
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(
+        {'kmAttuali': newKmValue}
+      )
+    );
     print(response.headers);
     print(response.body);
     print(response.statusCode);
+    
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
-        const SnackBar(content: Text('Dati aggiornati con successo')),
-      );
+      if (_modalScaffoldKey.currentContext != null) {
+        ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
+          const SnackBar(content: Text('Dati aggiornati con successo')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(_modalScaffoldKey.currentContext!).showSnackBar(
         const SnackBar(
-            content: Text('Errore durante l\'aggiornamento dei dati')),
+          content: Text('Errore durante l\'aggiornamento dei dati')
+        ),
       );
     }
     _loadItems(); // Aggiorna la pagina richiamando _loadItems
@@ -310,22 +326,24 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
     } catch (error) {
       debugPrint("Error loading data: $error");
       showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-                title: const Text("Errore"),
-                content: Text("Si è verificato il seguente errore: $error"),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // chiude il dialog
-                    },
-                    child: const Text("OK"),
-                  )
-                ]);
-          });
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              title: const Text("Errore"),
+              content: Text("Si è verificato il seguente errore: $error"),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // chiude il dialog
+                  },
+                  child: const Text("OK"),
+                )
+              ]
+            );
+          }
+        );
+      }
     }
-  }
 
   @override
   Widget build(BuildContext context) {
