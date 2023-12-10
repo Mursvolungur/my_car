@@ -15,11 +15,7 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  // final String version; // Definisci version come variabile di istanza
-  // const MyApp({Key? key, required this.version}) : super(key: key);
-
   final String appTitle = 'My Car';
-  // late final String version; // Dichiarazione della variabile version
 
   final Future<String> _versionFuture = getVersionInfo();
 
@@ -28,8 +24,6 @@ class MyApp extends StatelessWidget {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
     return packageInfo.version;
   }
-
-// final String appTitle = 'My Car';
 
   // This widget is the root of your application.
   @override

@@ -185,10 +185,9 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
               content: Column(mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  initialValue: item.nome, // All'apertura del dialog vedi il valore attuale
+                  initialValue: item.nome,  // All'apertura del dialog vedi il valore attuale
                   decoration: const InputDecoration(labelText: 'Nome'),
-                  onChanged: (value) {
-                    // con onSaved non funziona
+                  onChanged: (value) {      // con onSaved non funziona
                     print(value);
                     item.nome = value;
                   }
@@ -214,16 +213,19 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
               ]),
               actions: <Widget>[
                 TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Chiude il dialog
-                    },
-                    child: const Text('Annulla')),
+                  onPressed: () {
+                    Navigator.of(context).pop();  // Chiude il dialog
+                    _loadItems();                 // Ricarica i valori dal DB, altrimenti visualizza la modifica fatta in locale (item.nome = value) anche se non inviata con "Salva"
+                  },
+                  child: const Text('Annulla')
+                ),
                 TextButton(
-                    onPressed: () {
-                      _saveChanges(item); // Richiama la funzione che fa la PATCH e
-                      Navigator.of(context).pop(); // poi chiude il dialog
-                    },
-                    child: const Text('Salva'))
+                  onPressed: () {
+                    _saveChanges(item); // Richiama la funzione che fa la PATCH e
+                    Navigator.of(context).pop(); // poi chiude il dialog
+                  },
+                  child: const Text('Salva')
+                )
               ])
     ));
   }
@@ -383,7 +385,7 @@ class _ListaSostituzioniState extends State<ListaSostituzioni> {
                 .middle, // Align content vertically in the middle
             columnWidths: const {
               // Definisco la larghezza di ogni colonna rispetto allo standard assegnato dividendo le colonne in parti uguali (nel caso di tre colonne 1 è uguale a un terzo, 2 a due terzi)
-              0: FlexColumnWidth(1.2),
+              0: FlexColumnWidth(1.3),
               1: FlexColumnWidth(0.8),
               2: FlexColumnWidth(1),
             },
